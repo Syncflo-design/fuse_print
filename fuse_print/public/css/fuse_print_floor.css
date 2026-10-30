@@ -1,0 +1,124 @@
+/* Fuse Print — the Print Floor.
+ *
+ * Sized for a thumb on a tablet or phone at the machine, and for a station PC with a scanner:
+ * nothing under 16px, no target under 48px, colour never the only signal. Colours defer to
+ * fuse_theme's variables where it is installed and fall back to the same values where it is not.
+ *
+ * Only .fp- classes are styled, so nothing here can leak into the desk forms.
+ */
+
+.fp-root {
+	--fp-green: var(--fuse-green, #007E45);
+	--fp-green-dark: var(--fuse-green-dark, #006034);
+	--fp-green-tint: var(--fuse-green-tint, #E7F4ED);
+	--fp-ink: #0F172A;
+	--fp-muted: #475569;
+	--fp-line: #CBD5E1;
+	--fp-bg: #FFFFFF;
+	--fp-sunken: #F1F5F9;
+	--fp-amber: #92400E;
+	--fp-amber-bg: #FEF3C7;
+	color: var(--fp-ink);
+	max-width: 720px;
+	margin: 0 auto;
+	padding: 12px 12px calc(96px + env(safe-area-inset-bottom, 0px));
+	font-size: 18px;
+	line-height: 1.45;
+}
+
+[data-theme="dark"] .fp-root {
+	--fp-ink: #F1F5F9;
+	--fp-muted: #B6C2D2;
+	--fp-line: #45505F;
+	--fp-bg: #1B1F24;
+	--fp-sunken: #22272E;
+	--fp-amber: #FCD34D;
+	--fp-amber-bg: #3A3010;
+	--fp-green-tint: rgba(0, 126, 69, 0.2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.fp-root * { transition: none !important; animation: none !important; }
+}
+
+.fp-root button, .fp-root input, .fp-root textarea { font-family: inherit; touch-action: manipulation; }
+.fp-root :focus-visible { outline: 3px solid var(--fp-green); outline-offset: 2px; }
+
+.fp-icon { width: 22px; height: 22px; flex: 0 0 auto; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.fp-icon-lg { width: 30px; height: 30px; }
+.fp-icon-xl { width: 64px; height: 64px; color: var(--fp-green); }
+
+.fp-lead { color: var(--fp-muted); margin: 8px 0 16px; }
+.fp-sub { display: block; font-size: 14px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--fp-muted); margin: 20px 0 8px; }
+.fp-badge { font-style: normal; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; border: 1.5px dashed var(--fp-green); color: var(--fp-green); white-space: nowrap; }
+.fp-badge-go { border-style: solid; background: var(--fp-green-tint); }
+
+/* ── header, who is working ───────────────────────────────────────────── */
+
+.fp-head { display: flex; align-items: center; gap: 12px; margin: 4px 0 14px; }
+.fp-head h2 { margin: 0; font-size: 24px; font-weight: 700; }
+.fp-head p { margin: 2px 0 0; color: var(--fp-muted); font-size: 16px; }
+.fp-back { display: grid; place-items: center; width: 48px; height: 48px; flex: 0 0 48px; border: 1px solid var(--fp-line); border-radius: 12px; background: var(--fp-bg); color: var(--fp-ink); }
+
+.fp-who { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 52px; padding: 10px 14px; margin-bottom: 14px; border: 1px solid var(--fp-line); border-radius: 12px; background: var(--fp-sunken); color: var(--fp-ink); text-align: left; }
+
+.fp-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+.fp-tile { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 12px 16px; border: 2px solid var(--fp-line); border-radius: 14px; background: var(--fp-bg); color: var(--fp-ink); font-size: 18px; font-weight: 600; text-align: left; }
+.fp-tile:hover { border-color: var(--fp-green); }
+
+/* ── scan box ─────────────────────────────────────────────────────────── */
+
+.fp-scan { display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 14px; border: 2px solid var(--fp-green); border-radius: 14px; background: var(--fp-bg); color: var(--fp-green); }
+.fp-scan-input { flex: 1 1 auto; min-width: 0; min-height: 48px; border: 0; background: transparent; color: var(--fp-ink); font-size: 20px; font-weight: 600; }
+.fp-scan-input:focus { outline: none; }
+.fp-scan-input::placeholder { color: var(--fp-muted); font-weight: 400; font-size: 16px; }
+.fp-scan-cam { display: grid; place-items: center; width: 48px; height: 48px; flex: 0 0 48px; border: 1px solid var(--fp-line); border-radius: 10px; background: var(--fp-bg); color: var(--fp-green); }
+.fp-scan-go { min-height: 48px; padding: 0 18px; border: 0; border-radius: 10px; background: var(--fp-green); color: #FFFFFF; font-weight: 700; }
+
+/* ── workstations and their queues ────────────────────────────────────── */
+
+.fp-stations { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.fp-station { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; min-height: 84px; padding: 14px 16px; border: 2px solid var(--fp-line); border-radius: 14px; background: var(--fp-bg); color: var(--fp-ink); text-align: left; font-size: 19px; font-weight: 600; }
+.fp-station:hover { border-color: var(--fp-green); }
+.fp-station-icon { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 12px; background: var(--fp-green-tint); color: var(--fp-green); }
+.fp-station-name { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.fp-station-name small { font-size: 15px; font-weight: 400; color: var(--fp-muted); }
+.fp-count { font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--fp-green); }
+
+.fp-jobs { display: flex; flex-direction: column; gap: 10px; }
+.fp-job { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 72px; padding: 12px 16px; border: 2px solid var(--fp-line); border-radius: 14px; background: var(--fp-bg); color: var(--fp-ink); text-align: left; }
+.fp-job:hover { border-color: var(--fp-green); }
+.fp-job-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.fp-job-main small, .fp-job-side { font-size: 15px; color: var(--fp-muted); }
+.fp-job-side { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; text-align: right; }
+.fp-job-side b { font-size: 22px; color: var(--fp-ink); font-variant-numeric: tabular-nums; }
+
+/* ── a step ───────────────────────────────────────────────────────────── */
+
+.fp-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 14px; }
+.fp-facts div { padding: 10px 14px; border-radius: 12px; background: var(--fp-sunken); }
+.fp-facts span { display: block; font-size: 14px; color: var(--fp-muted); }
+.fp-facts b { font-size: 20px; font-variant-numeric: tabular-nums; }
+
+.fp-note-line { display: flex; align-items: center; gap: 10px; color: var(--fp-muted); margin: 6px 0 14px; }
+.fp-warn { display: flex; align-items: flex-start; gap: 10px; padding: 14px 16px; border-radius: 12px; background: var(--fp-amber-bg); color: var(--fp-amber); font-weight: 600; }
+
+.fp-field { display: flex; flex-direction: column; gap: 6px; margin: 0 0 14px; font-weight: 600; }
+.fp-field input, .fp-field textarea { width: 100%; padding: 12px 14px; border: 2px solid var(--fp-line); border-radius: 12px; background: var(--fp-bg); color: var(--fp-ink); font-size: 18px; font-weight: 400; }
+.fp-good { min-height: 64px; font-size: 32px !important; font-weight: 700 !important; font-variant-numeric: tabular-nums; }
+.fp-field input:focus, .fp-field textarea:focus { border-color: var(--fp-green); outline: none; }
+
+.fp-spoiled { margin: 0 0 6px; font-size: 20px; }
+.fp-spoiled b { font-variant-numeric: tabular-nums; }
+.fp-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+.fp-chip { min-height: 48px; padding: 8px 16px; border: 2px solid var(--fp-line); border-radius: 999px; background: var(--fp-bg); color: var(--fp-ink); font-size: 16px; font-weight: 600; }
+.fp-chip[aria-pressed="true"] { border-color: var(--fp-green); background: var(--fp-green-tint); color: var(--fp-green-dark); }
+[data-theme="dark"] .fp-chip[aria-pressed="true"] { color: var(--fp-ink); }
+
+.fp-go { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; min-height: 64px; margin-top: 8px; border: 0; border-radius: 14px; background: var(--fp-green); color: #FFFFFF; font-size: 22px; font-weight: 700; }
+.fp-go:hover:not(:disabled) { background: var(--fp-green-dark); }
+.fp-go:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.fp-finished { text-align: center; padding: 18px 8px; }
+.fp-finished h2 { margin: 10px 0 6px; font-size: 26px; font-weight: 700; }
+.fp-finished p { color: var(--fp-muted); }
