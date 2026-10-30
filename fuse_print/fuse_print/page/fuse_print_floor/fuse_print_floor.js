@@ -45,6 +45,7 @@ const FP_ICONS = {
 	alert: 'M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01',
 	camera: 'M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
 	box: 'M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16zM3.27 6.96 12 12.01l8.73-5.05M12 22.08V12',
+	plus: 'M12 5v14M5 12h14',
 };
 
 function fp_icon(name, cls) {
@@ -58,6 +59,11 @@ function esc(value) {
 
 function fp_num(value) {
 	return format_number(flt(value), null, 0);
+}
+
+// A material quantity, which is often fractional (2.5 m²): as the operator would say it.
+function fp_num_any(value) {
+	return String(parseFloat(flt(value).toFixed(3)));
 }
 
 function fp_get(key) {
@@ -318,6 +324,8 @@ class PrintFloor {
 			'</div></div>',
 			'<label class="fp-field"><span>' + esc(__('Note (optional)')) + '</span>',
 			'<textarea class="fp-note" rows="3" placeholder="' + esc(__('Anything the office should know')) + '"></textarea></label>',
+			'<div class="fp-added"></div>',
+			'<button type="button" class="fp-who" data-act="add">' + fp_icon('plus') + esc(__('Add an item used')) + '</button>',
 			'<button type="button" class="fp-go" data-act="done" disabled>' + fp_icon('tick', 'fp-icon-lg') + esc(__('Done')) + '</button>',
 		].join(''));
 
@@ -325,6 +333,16 @@ class PrintFloor {
 		const $done = this.$root.find('[data-act="done"]');
 		const $note = this.$root.find('.fp-note');
 		let reason = null;
+
+		// Used at this step and not on the recipe; finishing the run consumes it. Painted in place so
+		// what the operator has typed above stays where it is.
+		const paint_added = (added) => {
+			this.$root.find('.fp-added').html((added || []).map((line) =>
+				'<p class="fp-note-line">' + fp_icon('plus') + esc(__('{0} {1} {2} added', [fp_num_any(line.qty),
+					line.uom || '', line.item_name || line.item_code])) + '</p>').join(''));
+		};
+		paint_added(c.added);
+		this.$root.find('[data-act="add"]').on('click', () => this.ask_item(c, paint_added));
 
 		const update = () => {
 			const good = flt($good.val());
@@ -353,6 +371,28 @@ class PrintFloor {
 				.then((r) => this.after_finish(r))
 				.catch(() => $done.prop('disabled', false));
 		});
+	}
+
+	ask_item(c, then) {
+		const dialog = new frappe.ui.Dialog({
+			title: __('Add an item used'),
+			fields: [
+				{
+					fieldname: 'item_code', fieldtype: 'Link', options: 'Item', label: __('Item'), reqd: 1,
+					get_query: () => ({ filters: { disabled: 0, is_stock_item: 1 } }),
+				},
+				{ fieldname: 'qty', fieldtype: 'Float', label: __('How much (in its stock unit)'), reqd: 1 },
+			],
+			primary_action_label: __('Add'),
+			primary_action: (values) => {
+				if (flt(values.qty) <= 0) return frappe.msgprint(__('Enter how much was used.'));
+				dialog.hide();
+				const op = this.operator;
+				fp_call('add_item', { job_card: c.name, item_code: values.item_code, qty: flt(values.qty), employee: op ? op.id : null })
+					.then((fresh) => then(fresh.added));
+			},
+		});
+		dialog.show();
 	}
 
 	after_finish(r) {

@@ -14,6 +14,7 @@ button makes, so fuse_manufacturing posts it where posting is on.
 
 import frappe
 from frappe.utils import cint, flt, now_datetime, strip_html
+from fuse_manufacturing.floor import added_items, job_card_add_item, mark_added_consumed, run_added_items
 
 from fuse_print.waste import REASONS, received_at, step_waste
 
@@ -189,6 +190,7 @@ def step(name):
 		"waiting_for": _waiting_for(doc),
 		"started": str(log.from_time) if log else None,
 		"started_by": frappe.db.get_value("Employee", log.employee, "employee_name") if log and log.employee else None,
+		"added": added_items(doc),
 	}
 
 
@@ -224,6 +226,14 @@ def start(job_card, employee):
 	doc.append("time_logs", {"from_time": now_datetime(), "employee": employee})
 	doc.save()
 	return step(doc.name)
+
+
+@frappe.whitelist(methods=["POST"])
+def add_item(job_card, item_code, qty, employee=None):
+	"""Something used at this step that the recipe does not list. Finishing the run consumes it."""
+	_guard()
+	job_card_add_item(job_card, item_code, qty, employee)
+	return step(job_card)
 
 
 @frappe.whitelist(methods=["POST"])
@@ -295,14 +305,23 @@ def finish_run(work_order, posting=None):
 
 	The entry is for the whole run, so the materials are backflushed for everything that went
 	through the line. ERPNext books the job cards' process loss on it, so what reaches finished
-	goods is the run less the waste. `posting` is (date, time), for a back-dated finish.
+	goods is the run less the waste. Anything added at the steps on the floor is consumed with
+	it, from the store the run draws from. `posting` is (date, time), for a back-dated finish.
 	"""
 	from erpnext.manufacturing.doctype.work_order.work_order import make_stock_entry
 
 	qty = frappe.db.get_value("Work Order", work_order, "qty")
 	entry = frappe.get_doc(make_stock_entry(work_order, "Manufacture", qty))
+	added = run_added_items(work_order)
+	if added:
+		store = next((row.s_warehouse for row in entry.items if row.s_warehouse), None)
+		if not store:
+			frappe.throw(f"{work_order} has no store to take the added items from.")
+		for line in added:
+			entry.append("items", {"item_code": line["item_code"], "qty": line["qty"], "s_warehouse": store})
 	if posting:
 		entry.update({"posting_date": posting[0], "posting_time": posting[1], "set_posting_time": 1})
 	entry.insert()
 	entry.submit()
+	mark_added_consumed([line["row"] for line in added], entry.name)
 	return entry
