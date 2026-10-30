@@ -14,7 +14,13 @@ button makes, so fuse_manufacturing posts it where posting is on.
 
 import frappe
 from frappe.utils import cint, flt, now_datetime, strip_html
-from fuse_manufacturing.floor import added_items, job_card_add_item, mark_added_consumed, run_added_items
+from fuse_manufacturing.floor import (
+	added_items,
+	job_card_add_item,
+	mark_added_consumed,
+	permitted_companies,
+	run_added_items,
+)
 
 from fuse_print.waste import REASONS, received_at, step_waste
 
@@ -29,8 +35,14 @@ def _guard():
 
 
 def _company():
-	"""The floor shows one company's work: the user's default, as the desk does."""
-	return frappe.defaults.get_user_default("Company")
+	"""The floor shows one company's work: the user's default, as the desk does.
+
+	A login kept to one company by User Permission can still carry the site's default company,
+	which that permission then blanks out, and no company here lists every company's people.
+	So fall back to the one company the login is kept to.
+	"""
+	permitted = permitted_companies() or []
+	return frappe.defaults.get_user_default("Company") or (permitted[0] if len(permitted) == 1 else None)
 
 
 def _open_cards(**filters):
